@@ -1,0 +1,15 @@
+.git
+.env*
+!.env.example
+node_modules
+artifacts
+data
+legacy
+__pycache__
+tests
+*.py
+requirements.txt
+Dockerfile
+source-audit.json
+reference-audit.json
+embed-audit.json

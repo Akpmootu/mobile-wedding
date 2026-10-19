@@ -1,0 +1,6 @@
+'use strict';const {test}=require('node:test');const assert=require('node:assert/strict');
+test('initializer twice preserves edited rows, creates missing tabs and seeds only missing stable IDs',async()=>{
+ const {initialize}=require('../scripts/init-sheet');const {EVENT_HEADERS,MEDIA_HEADERS,eventRow,parseEvents}=require('../lib/sheets');const seed=require('../lib/domain').seedEvents()[0];seed.payload.title='Existing edit';const tabs={Events:[EVENT_HEADERS,eventRow(seed)]};const store={configured:true,request:async(path,method,body)=>{if(method==='POST'){for(const r of body.requests)tabs[r.addSheet.properties.title]=[];return {};}return {sheets:Object.keys(tabs).map(title=>({properties:{title}}))};},values:async range=>structuredClone(tabs[range.split('!')[0]]||[]),writeHeader:async(tab,headers)=>{tabs[tab][0]=headers;},appendRows:async(tab,rows)=>tabs[tab].push(...rows),readEvents:async()=>parseEvents(tabs.Events)};
+ await initialize(store);assert.deepEqual(tabs.Media[0],MEDIA_HEADERS);assert.equal(tabs.Events.length,9);assert.equal(JSON.parse(tabs.Events[1][3]).title,'Existing edit');await initialize(store);assert.equal(tabs.Events.length,9);
+ tabs.Media[0]=['bad'];await assert.rejects(()=>initialize(store));assert.equal(tabs.Events.length,9);
+});

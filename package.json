@@ -1,0 +1,16 @@
+{
+  "name": "mobile-wedding-invitation",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Wedding invitation portfolio with Google-only administration and Google Sheets storage",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env.local dev-server.cjs",
+    "start": "node --env-file-if-exists=.env.local dev-server.cjs",
+    "test": "node --test tests/*.cjs",
+    "build": "node scripts/check-build.cjs",
+    "lint": "node --check api/index.js && node --check public/app.js && node --check public/admin.js",
+    "sheets:init": "node --env-file-if-exists=.env.local scripts/init-sheet.js"
+  },
+  "dependencies": { "google-auth-library": "^10.5.0" }
+}

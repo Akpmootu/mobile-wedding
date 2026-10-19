@@ -1,0 +1,3 @@
+'use strict';
+const test=require('node:test');const assert=require('node:assert/strict');const path=require('node:path');
+test('dev static resolver excludes secret and parent files',()=>{const {resolveStatic}=require('../dev-server.cjs');assert.equal(resolveStatic('/.env.local'),null);assert.equal(resolveStatic('/../server.py'),null);assert.equal(resolveStatic('/api/health'),null);assert.equal(resolveStatic('/'),path.join(path.resolve(__dirname,'../public'),'index.html'));assert.equal(resolveStatic('/assets/line-qr.png'),path.join(path.resolve(__dirname,'../public'),'assets','line-qr.png'));});

@@ -1,0 +1,10 @@
+'use strict';const {test}=require('node:test');const assert=require('node:assert/strict');
+test('media Sheet rows chunk at 40000, append once and reassemble exact image',async()=>{
+ const {SheetsStore,MEDIA_HEADERS}=require('../lib/sheets');const {mediaRow}=require('../lib/media');const bytes=Buffer.alloc(160000);Buffer.from([255,216,255]).copy(bytes);bytes[bytes.length-2]=255;bytes[bytes.length-1]=217;const m={id:'a',type:'image/jpeg',bytes};const row=mediaRow(m);assert.equal(row.length,10);assert.ok(row.slice(2).every(x=>x.length<=40000));let posts=0;const store=new SheetsStore({GOOGLE_SHEET_ID:'x',GOOGLE_SERVICE_ACCOUNT_JSON:'{}'},{accessToken:async()=>'',fetch:async(url,o)=>{if(o.method==='POST'){posts++;assert.deepEqual(JSON.parse(o.body).values,[row]);}return {ok:true,json:async()=>({values:[MEDIA_HEADERS,row]})};}});await store.appendMedia(m);assert.equal(posts,1);assert.deepEqual((await store.readMedia('a')).bytes,bytes);
+});
+test('Sheets transport pins ID, validates headers and atomically appends RAW bounded audit row',async()=>{
+ const {SheetsStore,EVENT_HEADERS}=require('../lib/sheets');const calls=[];const store=new SheetsStore({GOOGLE_SHEET_ID:'pinned_sheet',GOOGLE_SERVICE_ACCOUNT_JSON:'{}'},{accessToken:async()=> 'private-token',fetch:async(url,opts)=>{calls.push({url,opts});return {ok:true,json:async()=>opts.method==='POST'?{updates:{updatedRange:'Events!A2:G2'}}:{values:[EVENT_HEADERS]}};}});
+ assert.deepEqual(await store.readEvents(),[]);await store.appendEvent(require('../lib/domain').seedEvents()[0]);assert.ok(calls.every(c=>c.url.includes('/pinned_sheet/')));const append=calls.at(-1);assert.match(append.url,/valueInputOption=RAW/);assert.equal(JSON.parse(append.opts.body).values.length,1);assert.equal(JSON.parse(append.opts.body).values[0].length,7);
+ await assert.rejects(()=>store.appendEvent({...require('../lib/domain').seedEvents()[0],payload:{huge:'x'.repeat(40001)}}));
+ const broken=new SheetsStore({GOOGLE_SHEET_ID:'x',GOOGLE_SERVICE_ACCOUNT_JSON:'{}'},{accessToken:async()=>'',fetch:async()=>({ok:true,json:async()=>({values:[['wrong']]})})});await assert.rejects(()=>broken.readEvents());
+});

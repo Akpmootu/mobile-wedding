@@ -1,0 +1,17 @@
+data/
+__pycache__/
+*.pyc
+.env
+.env.local
+.env.*.local
+.vercel/
+node_modules/
+artifacts/
+legacy/
+*service-account*.json
+*credentials*.json
+*client_secret*.json
+
+.vercel
+.env*
+!.env.example

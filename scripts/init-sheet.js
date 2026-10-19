@@ -1,0 +1,10 @@
+'use strict';
+const {SheetsStore,EVENT_HEADERS,MEDIA_HEADERS,assertHeader,eventRow}=require('../lib/sheets');const {seedEvents}=require('../lib/domain');
+async function initialize(store){if(!store.configured)throw Error('Configure GOOGLE_SHEET_ID and GOOGLE_SERVICE_ACCOUNT_JSON first');const schema={Events:EVENT_HEADERS,Media:MEDIA_HEADERS};const metadata=await store.request('?fields=sheets.properties.title');const existing=new Set((metadata.sheets||[]).map(s=>s.properties.title));
+// Validate ALL existing schemas before any external write.
+for(const [tab,header]of Object.entries(schema)){if(existing.has(tab)){const rows=await store.values(tab+'!A1:Z1');if(rows.length)assertHeader(rows[0],header);else{const all=await store.values(tab+'!A:Z');if(all.some(r=>r.some(Boolean)))throw Error('Nonempty tab missing header');}}}
+const missing=Object.keys(schema).filter(tab=>!existing.has(tab));if(missing.length)await store.request(':batchUpdate','POST',{requests:missing.map(title=>({addSheet:{properties:{title}}}))});
+for(const [tab,header]of Object.entries(schema)){const rows=await store.values(tab+'!A1:Z1');if(!rows.length)await store.writeHeader(tab,header);assertHeader((await store.values(tab+'!A1:Z1'))[0],header);}
+const events=await store.readEvents();const ids=new Set(events.map(e=>e.cardId));const seeds=seedEvents().filter(e=>!ids.has(e.cardId));if(seeds.length)await store.appendRows('Events',seeds.map(eventRow));const after=await store.readEvents();for(const e of seeds)if(!after.some(x=>x.id===e.id))throw Error('Seed read-back failed');return {events:after.length,seedsAdded:seeds.length,tabsCreated:missing};}
+if(require.main===module){if(!process.argv.includes('--confirm')){console.error('No changes made. Run node --env-file=.env scripts/init-sheet.js --confirm to initialize the pinned spreadsheet.');process.exitCode=1;}else initialize(new SheetsStore()).then(r=>console.log(JSON.stringify(r))).catch(()=>{console.error('Initialization failed; check credentials, sharing, schema and network. No secret values logged.');process.exitCode=1;});}
+module.exports={initialize};
