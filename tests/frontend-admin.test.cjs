@@ -8,10 +8,10 @@ test('Google authentication requires a verified allowlisted session, not just an
  for(const session of [{authenticated:false},{authenticated:true,csrf:'x',email:'other@gmail.com'},{authenticated:true,email:'akaporn1234@gmail.com'}])await assert.rejects(authenticateGoogle('token',async url=>url==='/api/session'?session:{ok:true}));
  await assert.rejects(authenticateGoogle('',request));
 });
-function bootAdmin(responses,{googleBlocked=false}={}){
+function bootAdmin(responses,{googleBlocked=false,responseHeaders={}}={}){
  const vm=require('node:vm');const elements=new Map();const calls=[];let ready,googleOptions,rendered=false;
  const element=selector=>{if(!elements.has(selector))elements.set(selector,{hidden:false,value:'',textContent:'',innerHTML:'',dataset:{},elements:new Proxy({},{get:(target,key)=>target[key]??=( {value:'',checked:false,addEventListener(){},focus(){}} )}),classList:{toggle(){}},addEventListener(){},appendChild(){},setAttribute(){},focus(){},showModal(){},close(){},reset(){}});return elements.get(selector);};
- const context={console,URL,location:{origin:'https://studio.test'},setTimeout,clearTimeout,document:{querySelector:element,querySelectorAll:()=>[],addEventListener:(name,fn)=>{ready=fn;},createElement:()=>({remove(){}}),head:{appendChild:script=>{queueMicrotask(()=>googleBlocked?script.onerror():script.onload());}}},google:{accounts:{id:{initialize:options=>{googleOptions=options;},renderButton:()=>{rendered=true;},disableAutoSelect(){}}}},fetch:async(url,options)=>{calls.push([url,options]);const value=responses[url];if(value instanceof Error)throw value;const data=typeof value==='function'?value(options):value;return {ok:!data?.status||data.status<400,status:data?.status||200,json:async()=>data||{}};}};
+ const context={console,URL,location:{origin:'https://studio.test'},setTimeout,clearTimeout,document:{querySelector:element,querySelectorAll:()=>[],addEventListener:(name,fn)=>{ready=fn;},createElement:()=>({remove(){}}),head:{appendChild:script=>{queueMicrotask(()=>googleBlocked?script.onerror():script.onload());}}},google:{accounts:{id:{initialize:options=>{googleOptions=options;},renderButton:()=>{rendered=true;},disableAutoSelect(){}}}},fetch:async(url,options)=>{calls.push([url,options]);const value=responses[url];if(value instanceof Error)throw value;const data=await (typeof value==='function'?value(options):value);return {ok:!data?.status||data.status<400,status:data?.status||200,headers:{get:name=>responseHeaders[url]?.[name]||null},json:async()=>data||{}};}};
  vm.runInNewContext(fs.readFileSync(admin,'utf8'),context);ready();
  return {elements,element,calls,get googleOptions(){return googleOptions;},get rendered(){return rendered;},flush:async()=>{for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));}};
 }
@@ -34,6 +34,39 @@ test('logout uses CSRF and refreshes Google challenge before another sign-in',as
 });
 test('flat health config does not claim real connectivity without a probe',async()=>{
  for(const configured of [false,true]){const ui=bootAdmin({'/api/session':{authenticated:false},'/api/auth/config':{configured:false},'/api/health':{ok:true,sheetsConfigured:configured,source:configured?'google-sheets':'seed'}});await ui.flush();assert.match(ui.element('#sheets-status').textContent,configured?/ตั้งค่าแล้ว.*ยังไม่ยืนยัน/:/ยังไม่ได้ตั้งค่า/);assert.doesNotMatch(ui.element('#sheets-status').textContent,/เชื่อมต่อแล้ว/);}
+});
+test('verified Sheets card read updates status, survives late config-only health, and clears on read failure',async()=>{
+ let releaseHealth;const responses={'/api/session':{authenticated:true,csrf:'token',email:'akaporn1234@gmail.com'},'/api/admin/cards':[], '/api/settings':{},'/api/health':()=>new Promise(resolve=>{releaseHealth=resolve;})};
+ const ui=bootAdmin(responses,{responseHeaders:{'/api/admin/cards':{'x-data-source':'google-sheets'}}});await ui.flush();
+ assert.match(ui.element('#sheets-status').textContent,/เชื่อมต่อแล้ว/);
+ releaseHealth({sheetsConfigured:true});await ui.flush();assert.match(ui.element('#sheets-status').textContent,/เชื่อมต่อแล้ว/);
+ responses['/api/admin/cards']=new Error('Datastore unavailable');responses['/api/health']={sheetsConfigured:true};await ui.element('#refresh-cards').onclick();await ui.flush();
+ assert.doesNotMatch(ui.element('#sheets-status').textContent,/เชื่อมต่อแล้ว/);
+ for(const body of [[],{}]){const unverified=bootAdmin({'/api/session':{authenticated:true,csrf:'token',email:'akaporn1234@gmail.com'},'/api/admin/cards':body,'/api/settings':{},'/api/health':{sheetsConfigured:true}});await unverified.flush();assert.doesNotMatch(unverified.element('#sheets-status').textContent,/เชื่อมต่อแล้ว/);}
+});
+test('stale card success cannot replace a newer failed read or restore verified status',async()=>{
+ let releaseOld;const responses={'/api/session':{authenticated:true,csrf:'token',email:'akaporn1234@gmail.com'},'/api/admin/cards':()=>new Promise(resolve=>{releaseOld=resolve;}),'/api/settings':{},'/api/health':{sheetsConfigured:true}};
+ const ui=bootAdmin(responses,{responseHeaders:{'/api/admin/cards':{'x-data-source':'google-sheets'}}});await ui.flush();
+ responses['/api/admin/cards']=new Error('Latest read failed');await ui.element('#refresh-cards').onclick();await ui.flush();
+ const latestStatus=ui.element('#sheets-status').textContent;const latestCards=ui.element('#admin-list').innerHTML;
+ assert.doesNotMatch(latestStatus,/เชื่อมต่อแล้ว/);
+ releaseOld([{id:'old',title:'Stale card'}]);await ui.flush();
+ assert.equal(ui.element('#sheets-status').textContent,latestStatus);assert.equal(ui.element('#admin-list').innerHTML,latestCards);
+});
+test('stale card failure cannot overwrite a newer verified read',async()=>{
+ let rejectOld;const responses={'/api/session':{authenticated:true,csrf:'token',email:'akaporn1234@gmail.com'},'/api/admin/cards':()=>new Promise((resolve,reject)=>{rejectOld=reject;}),'/api/settings':{},'/api/health':{sheetsConfigured:true}};
+ const ui=bootAdmin(responses,{responseHeaders:{'/api/admin/cards':{'x-data-source':'google-sheets'}}});await ui.flush();
+ responses['/api/admin/cards']=[{id:'new',title:'Latest card'}];await ui.element('#refresh-cards').onclick();await ui.flush();
+ const latestStatus=ui.element('#sheets-status').textContent;const latestCards=ui.element('#admin-list').innerHTML;
+ assert.match(latestStatus,/เชื่อมต่อแล้ว/);assert.match(latestCards,/Latest card/);
+ rejectOld(new Error('Old read failed'));await ui.flush();
+ assert.equal(ui.element('#sheets-status').textContent,latestStatus);assert.equal(ui.element('#admin-list').innerHTML,latestCards);
+});
+test('delayed health rejection cannot overwrite a newer verified card read',async()=>{
+ let rejectHealth;const ui=bootAdmin({'/api/session':{authenticated:true,csrf:'token',email:'akaporn1234@gmail.com'},'/api/admin/cards':[{id:'new',title:'Latest card'}],'/api/settings':{},'/api/health':()=>new Promise((resolve,reject)=>{rejectHealth=reject;})},{responseHeaders:{'/api/admin/cards':{'x-data-source':'google-sheets'}}});await ui.flush();
+ const latestStatus=ui.element('#sheets-status').textContent;assert.match(latestStatus,/เชื่อมต่อแล้ว/);
+ rejectHealth(new Error('Delayed probe failure'));await ui.flush();
+ assert.equal(ui.element('#sheets-status').textContent,latestStatus);assert.match(ui.element('#admin-list').innerHTML,/Latest card/);
 });
 test('Google script failure and configured-but-disconnected Sheets are not success',async()=>{
  const ui=bootAdmin({'/api/session':{authenticated:false},'/api/auth/config':{configured:true,clientId:'client',nonce:'nonce'},'/api/health':{sheets:{configured:true,connected:false}}},{googleBlocked:true});await ui.flush();assert.equal(ui.rendered,false);assert.match(ui.element('#login-feedback').textContent,/Google.*(โหลด|บล็อก)/);assert.match(ui.element('#sheets-status').textContent,/เชื่อมต่อไม่ได้/);
