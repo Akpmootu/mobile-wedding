@@ -276,7 +276,7 @@ test('initializes on DOM ready with a visible, official 220 by 200 player', () =
   assert.equal(h.options, undefined);
   h.document.dispatch('DOMContentLoaded');
   assert.equal(h.el('wedding-music-panel').hidden, false);
-  assert.equal(h.options.videoId, 'G5kFdvmxdfo');
+  assert.equal(h.options.videoId, 'ULQVcDUJjvM');
   assert.equal(h.options.width, 220);
   assert.equal(h.options.height, 200);
   assert.equal(h.options.playerVars.autoplay, 1);
@@ -284,6 +284,6 @@ test('initializes on DOM ready with a visible, official 220 by 200 player', () =
   assert.equal(h.options.playerVars.origin, 'https://wedding.example');
   assert.equal(h.options.playerVars.playsinline, 1);
   assert.equal(h.options.playerVars.loop, 1);
-  assert.equal(h.options.playerVars.playlist, 'G5kFdvmxdfo');
-  assert.equal(h.el('wedding-music-youtube').href, 'https://youtu.be/G5kFdvmxdfo?si=gUvs7tEuPm1H8d2C');
+  assert.equal(h.options.playerVars.playlist, 'ULQVcDUJjvM');
+  assert.equal(h.el('wedding-music-youtube').href, 'https://youtu.be/ULQVcDUJjvM?si=X3nB8nKP7PUgc-JK');
 });

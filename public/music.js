@@ -1,7 +1,7 @@
 /* Official YouTube player: playback remains subject to browser and YouTube policy. */
 (() => {
   'use strict';
-  const VIDEO_ID = 'G5kFdvmxdfo';
+  const VIDEO_ID = 'ULQVcDUJjvM';
   function initialize() {
     if (document.getElementById('wedding-music')) return;
     function element(tag, id, text) {
@@ -13,7 +13,7 @@
     const dock = element('aside', 'wedding-music');
     dock.setAttribute('aria-label', 'เพลงคู่ชีวิต');
     const panel = element('div', 'wedding-music-panel');
-    const title = element('strong', '', 'คู่ชีวิต · Dr.Fuu');
+    const title = element('strong', '', 'คู่ชีวิต - COCKTAIL「Audio」');
     const close = element('button', 'wedding-music-close', '−');
     close.setAttribute('aria-label', 'ย่อและพักเพลง');
     close.setAttribute('aria-controls', panel.id);
@@ -44,7 +44,7 @@
     const toggle = element('button', 'wedding-music-toggle', 'กำลังโหลดเพลง…');
     toggle.setAttribute('aria-pressed', 'false');
     const link = element('a', 'wedding-music-youtube', 'เปิดบน YouTube ↗');
-    link.href = 'https://youtu.be/G5kFdvmxdfo?si=gUvs7tEuPm1H8d2C';
+    link.href = 'https://youtu.be/ULQVcDUJjvM?si=X3nB8nKP7PUgc-JK';
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     const open = element('button', 'wedding-music-open', 'เปิดเพลง');
