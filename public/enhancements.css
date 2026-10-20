@@ -1,0 +1,99 @@
+/* Editorial refinements: preserve the ivory, blush and terracotta palette. */
+.wedding-page{font-size:16px}
+.wedding-page .hero-description,.wedding-page .pricing-intro>p:not(.eyebrow),.wedding-page .order-steps p,.wedding-page .gallery-intro>p,.wedding-page .contact-section>div>p:not(.eyebrow){font-size:15px}
+.wedding-page .story-copy p{font-size:16px}
+.wedding-page .hero-copy #tagline,.wedding-page .story-heading>p:not(.eyebrow){font-size:15px}
+.wedding-page .hero-copy h2{font-size:23px}
+.wedding-page .button,.wedding-page .text-link,.wedding-page .pill,.wedding-page .nav-item,.wedding-page .search-box input{font-size:14px}
+.wedding-page .desktop-nav a,.wedding-page .header-cta{font-size:13px}
+.wedding-page .wedding-brand>span{font-size:14px}
+.wedding-page .hero-footnote,.wedding-page .package-price small,.wedding-page .package-note,.wedding-page .story-signoff,.wedding-page .card-caption p{font-size:12px}
+.wedding-page .feature-list li{font-size:14px}
+.wedding-page .feature-list small{font-size:17px}
+.wedding-page .section-title{font-size:32px}
+.wedding-page .hero-copy,.wedding-page .detail-copy,.wedding-page .pricing-intro,.wedding-page .features-sheet{min-width:0}
+/* The supplied 1320 × 2868 preset is a ratio simulation, not a hardware claim. */
+.wedding-page .phone{aspect-ratio:auto}
+.wedding-page .phone-screen{display:block;aspect-ratio:1320 / 2868;height:auto}
+.wedding-page .hero-phone{text-align:initial;overflow:visible;isolation:isolate;transition:box-shadow .3s ease,translate .3s ease}
+.wedding-page .hero-phone .phone-screen{width:100%;position:relative;overflow:hidden}
+.wedding-page .hero-phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
+.hero-phone-caption{position:absolute;top:calc(100% + 10px);left:50%;translate:-50% 0;display:flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;padding:3px 12px;background:#fffaf5;border:1px solid #e5d2c3;border-radius:20px;font:500 13px/1.7 var(--sans);color:#80543f;box-shadow:0 4px 10px #715b3a0c}
+.wedding-page .back-phone .hero-phone-caption{top:auto;bottom:calc(100% + 12px)}
+.wedding-page .hero-art{height:620px}
+.wedding-page .front-phone{top:91px}
+.wedding-page .art-caption{bottom:0}
+.wedding-page .floral,.wedding-page .hero-script,.wedding-page .art-caption{pointer-events:none}
+.wedding-page .detail-phone{width:min(300px,66vw);max-width:100%;flex-shrink:0}
+.wedding-page dialog{max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
+.wedding-page .detail-preview{min-height:0}
+.wedding-page .detail-layout{min-height:0}
+.wedding-page .detail-copy{overflow-wrap:anywhere}
+.wedding-page .detail-copy>p:not(.eyebrow),.wedding-page .detail-meta{font-size:15px}
+.wedding-page .preview-status,.wedding-page .concept-note{font-size:12px;max-width:36em;line-height:1.8}
+.floating-contact{position:fixed;z-index:12;right:max(20px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:9px;min-width:125px;min-height:54px;padding:11px 16px;background:#fffaf5;color:#8d4938;border:1px solid #d2ab95;border-radius:32px;font-size:14px;font-weight:500;box-shadow:0 8px 25px #70513a22;transition:translate .25s ease,box-shadow .25s ease}
+.floating-contact svg{color:#377b52;flex-shrink:0}
+.wedding-page .gallery-card{min-width:0}
+.wedding-page .card-caption h3 button{text-align:left;overflow-wrap:anywhere}
+@media(hover:hover) and (pointer:fine){
+ .wedding-page .hero-phone:hover{translate:0 -5px;box-shadow:0 25px 42px #715b3a35,inset 0 0 0 1px #ffffff88}
+ .floating-contact:hover{translate:0 -3px;box-shadow:0 12px 30px #70513a30}
+ .wedding-page .gallery-card .card-stage{transition:translate .3s ease,box-shadow .3s ease}
+ .wedding-page .gallery-card:hover .card-stage{translate:0 -4px;box-shadow:0 12px 24px #715b3a15}
+}
+@media(max-width:1100px) and (min-width:761px){
+ .wedding-page .hero-art{height:560px}
+ .wedding-page .hero-copy h2{font-size:21px}
+ .wedding-page .hero-actions{gap:15px;flex-wrap:wrap}
+ .wedding-page .desktop-nav{gap:14px}
+}
+@media(max-width:760px){
+ .wedding-page{font-size:15px}
+ .wedding-page .hero-description,.wedding-page .pricing-intro>p:not(.eyebrow),.wedding-page .order-steps p,.wedding-page .gallery-intro>p,.wedding-page .contact-section>div>p:not(.eyebrow){font-size:14px}
+ .wedding-page .story-copy p{font-size:15px}
+ .wedding-page .wedding-brand>span{font-size:12px}
+ .wedding-page .hero-copy h2{font-size:20px}
+ .wedding-page .hero-copy #tagline,.wedding-page .story-heading>p:not(.eyebrow){font-size:14px}
+ .wedding-page .hero-copy h1{font-size:clamp(54px,16.8vw,68px)}
+ .wedding-page .hero-description br{display:none}
+ .wedding-page .hero-description{max-width:34em}
+ .wedding-page .hero-actions{gap:15px;flex-wrap:wrap}
+ .wedding-page .hero-art{height:510px;width:min(400px,100%)}
+ .wedding-page .front-phone{left:43%;top:80px;width:46%}
+ .wedding-page .back-phone{left:5%;width:45%;top:31px}
+ .hero-phone-caption{font-size:11px;gap:6px;padding:4px 9px}
+ .wedding-page .section-title{font-size:27px}
+ .wedding-page .contact-section .section-title{font-size:25px}
+ .wedding-page .feature-list{gap:0 12px}
+ .wedding-page .feature-list li{font-size:13px;padding-left:20px}
+ .wedding-page .feature-list small{font-size:15px}
+ .wedding-page .package-note,.wedding-page .hero-footnote,.wedding-page .story-signoff{font-size:12px}
+ .wedding-page .mobile-menu summary{font-size:12px;min-width:65px}
+ .wedding-page .mobile-menu nav a{font-size:14px}
+ .wedding-page .feature-description{font-size:12px}
+ .wedding-page .feature-actions .button{font-size:12px;white-space:normal;min-height:44px}
+ .wedding-page .card-caption p{font-size:12px}
+ .wedding-page .gallery-tabs{flex-wrap:wrap}
+ .wedding-page .detail-preview{padding:52px 18px 26px}
+ .floating-contact{right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));min-width:106px;padding:10px 12px;font-size:13px;gap:6px}
+ .floating-contact svg{width:26px;height:26px}
+}
+@media(max-width:370px){
+ .wedding-page .hero-art{height:450px}
+ .wedding-page .hero-copy h2{font-size:19px}
+ .wedding-page .hero-actions{gap:10px}
+ .wedding-page .hero-actions .button{padding-inline:17px}
+ .wedding-page .hero-actions .text-link{font-size:13px;gap:9px}
+ .wedding-page .features-sheet{padding-inline:18px}
+ .wedding-page .feature-list{grid-template-columns:1fr}
+ .wedding-page .feature-list li{font-size:14px}
+ .wedding-page .section-title{font-size:25px}
+ .wedding-page .contact-section .section-title{font-size:23px}
+ .wedding-page .wedding-brand>span{font-size:10px}
+ .wedding-page .wedding-brand small{font-size:9px}
+ .wedding-page .card-caption h3{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ .wedding-page *, .wedding-page *::before,.wedding-page *::after{animation:none!important;transition:none!important}
+}

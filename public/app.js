@@ -4,9 +4,11 @@ function filterCards(cards,{query='',category='',favoritesOnly=false,favorites=[
  return cards.filter(c=>c.published!==false && c.published!==0 && (!category||c.category===category) && (!favoritesOnly||favorites.includes(String(c.id))) && (!term||[c.title,c.subtitle,c.category,c.description].filter(Boolean).join(' ').toLocaleLowerCase().includes(term)));
 }
 function safeHttpURL(value,base){if(typeof value!=='string'||!value.trim())return '';try{const u=new URL(value,base);return ['http:','https:'].includes(u.protocol)?u.href:'';}catch{return '';}}
-function previewLayout(url,width,height){let wix=false;try{wix=new URL(url).hostname.endsWith('.wixsite.com');}catch{}const scale=wix?width/980:1;return {width:wix?980:width,height:height/scale,scale};}
+const PREVIEW_PRESET=Object.freeze({diagonalInches:6.9,pixelWidth:1320,pixelHeight:2868,pixelRatio:3,cssWidth:440,cssHeight:956});
+function previewLayout(url,width,height){let wix=false;try{wix=new URL(url).hostname.endsWith('.wixsite.com');}catch{}const canvasWidth=wix?980:PREVIEW_PRESET.cssWidth;const canvasHeight=canvasWidth*PREVIEW_PRESET.pixelHeight/PREVIEW_PRESET.pixelWidth;const scale=Math.max(0,Math.min(width/canvasWidth,height/canvasHeight));return {width:canvasWidth,height:canvasHeight,scale};}
+function heroCardForURL(cards,url){return cards.find(c=>c.url===url&&c.published!==false&&c.published!==0)||null;}
 function publicSettings(settings={},base){return {brand:settings.brand??'MOBILE WEDDING INVITATION',tagline:settings.tagline??'ลิงก์เดียวจบ ครบเรื่องการ์ดแต่งงาน',contact_url:safeHttpURL(settings.contact_url??'https://line.me/ti/p/R8xclmk6fX',base)};}
-if(typeof module!=='undefined') module.exports={filterCards,safeHttpURL,previewLayout,publicSettings};
+if(typeof module!=='undefined') module.exports={filterCards,safeHttpURL,previewLayout,publicSettings,PREVIEW_PRESET,heroCardForURL};
 if(typeof document!=='undefined') document.addEventListener('DOMContentLoaded',()=>{
  const $=s=>document.querySelector(s);
  const state={cards:[],category:'',query:'',favoritesOnly:false,favorites:[],active:null,opener:null};
@@ -44,6 +46,7 @@ if(typeof document!=='undefined') document.addEventListener('DOMContentLoaded',(
  window.addEventListener('popstate',()=>{const id=new URL(location.href).searchParams.get('card');if(id)openCard(id,false);else dismiss();});
  async function load(){ $('#load-state').hidden=false;$('#load-state').textContent='กำลังรวบรวมเรื่องราวดี ๆ…';$('#retry').hidden=true;
   try{const responses=await Promise.all([fetch('/api/cards',{credentials:'same-origin'}),fetch('/api/settings',{credentials:'same-origin'})]);if(!responses[0].ok)throw Error('cards');const cards=await responses[0].json();if(!Array.isArray(cards))throw Error('format');state.cards=filterCards(cards).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));let settings={};if(responses[1].ok)settings=await responses[1].json();const display=publicSettings(settings,location.origin);document.querySelectorAll('[data-brand]').forEach(el=>el.textContent=display.brand);$('#tagline').textContent=display.tagline;document.querySelectorAll('[data-tagline]').forEach(el=>el.textContent=display.tagline);document.querySelectorAll('[data-contact]').forEach(el=>{el.hidden=!display.contact_url;el.href=display.contact_url;});
+  document.querySelectorAll('[data-hero-url]').forEach(button=>{const card=heroCardForURL(state.cards,button.dataset.heroUrl);button.disabled=!card;if(card){button.dataset.open=String(card.id);}else{delete button.dataset.open;}});
   const cats=[...new Set(state.cards.map(c=>c.category).filter(Boolean))];$('#categories').innerHTML='<button class="pill active" data-category="" aria-pressed="true">ทั้งหมด</button>'+cats.map(c=>`<button class="pill" data-category="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join('');renderFeature();render();$('#load-state').hidden=true;const id=new URL(location.href).searchParams.get('card');if(id)openCard(id,false);
   }catch{$('#load-state').textContent='ยังโหลดคอลเลกชันไม่ได้ กรุณาลองอีกครั้ง';$('#retry').hidden=false;$('#empty').hidden=true;}}
  $('#retry').onclick=load;load();

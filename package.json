@@ -9,7 +9,7 @@
     "start": "node --env-file-if-exists=.env.local dev-server.cjs",
     "test": "node --test tests/*.cjs",
     "build": "node scripts/check-build.cjs",
-    "lint": "node --check api/index.js && node --check public/app.js && node --check public/admin.js",
+    "lint": "node --check api/index.js && node --check public/app.js && node --check public/motion.js && node --check public/music.js && node --check public/admin.js",
     "sheets:init": "node --env-file-if-exists=.env.local scripts/init-sheet.js"
   },
   "dependencies": { "google-auth-library": "^10.5.0" }

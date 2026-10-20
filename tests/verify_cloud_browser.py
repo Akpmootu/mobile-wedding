@@ -17,7 +17,7 @@ async def main():
   for width,height in [(1440,1000),(390,844)]:
    page=await browser.new_page(viewport={'width':width,'height':height})
    errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-   await page.goto(BASE,wait_until='networkidle')
+   await page.goto(BASE,wait_until='domcontentloaded')
    await page.locator('.gallery-card').last.wait_for()
    body=await page.locator('body').inner_text()
    assert '1,999' in body and 'MOBILE WEDDING INVITATION' in body
